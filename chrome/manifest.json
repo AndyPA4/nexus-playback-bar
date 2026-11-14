@@ -1,13 +1,18 @@
 {
   "manifest_version": 3,
   "name": "NEXUS Playback Bar",
-  "version": "0.2.25",
+  "version": "0.2.31",
   "permissions": [
     "activeTab",
     "scripting"
   ],
   "action": {
-    "default_title": "Connect this tab to the NEXUS"
+    "default_title": "Connect this tab to the NEXUS",
+    "default_icon": {
+      "16": "icons/npb-16.png",
+      "24": "icons/npb-24.png",
+      "32": "icons/npb-32.png"
+    }
   },
   "host_permissions": [
     "http://127.0.0.1:18763/*"
@@ -26,5 +31,12 @@
       ],
       "all_frames": true
     }
-  ]
+  ],
+  "icons": {
+    "16": "icons/npb-16.png",
+    "24": "icons/npb-24.png",
+    "32": "icons/npb-32.png",
+    "48": "icons/npb-48.png",
+    "128": "icons/npb-128.png"
+  }
 }
