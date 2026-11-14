@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "NEXUS Playback Bar",
+  "version": "0.2.25",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "action": {
+    "default_title": "Connect this tab to the NEXUS"
+  },
+  "host_permissions": [
+    "http://127.0.0.1:18763/*"
+  ],
+  "background": {
+    "service_worker": "bridge.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
+      "js": [
+        "player.js"
+      ],
+      "all_frames": true
+    }
+  ]
+}
