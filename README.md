@@ -20,7 +20,18 @@ Use your Corsair iCUE NEXUS as a touchscreen seek bar for Chrome on Windows. Tap
 2. Download `nexus-playback-bar-v0.2.31.zip` from [Releases](../../releases) and extract it to a folder you can keep.
 3. Run `Install-NEXUS.cmd`, then open **NEXUS Playback Bar** from Start.
 4. In `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted `chrome` folder. Pin the NPB icon from Chrome’s Extensions menu for easy access.
-5. Fully quit iCUE from its system tray menu to prevent display flicker. Refresh your music tab and start playback.
+5. If iCUE is running, follow the [iCUE workaround](#use-nexus-playback-bar-while-icue-is-running) below or fully quit iCUE from the system tray to prevent display flicker. Refresh your media tab and start playback.
+
+## Use NEXUS Playback Bar while iCUE is running
+
+This workaround was tested on **iCUE 5.52.93**. It lets iCUE manage your other Corsair devices while NEXUS Playback Bar controls the NEXUS screen.
+
+1. Unplug the NEXUS and leave iCUE running.
+2. In **iCUE → Settings → Software Updates**, disable automatic updates. If iCUE offers a removal option for the disconnected **iCUE NEXUS** module, remove that module.
+3. Reconnect the NEXUS. If iCUE shows **New Device Detected** for the NEXUS, skip **Download and Install** so the module stays uninstalled.
+4. Open NEXUS Playback Bar, play something in Chrome, and check that you can scrub on the NEXUS without flicker while your other Corsair devices still respond to iCUE.
+
+With automatic updates disabled, check for iCUE updates manually. If the removal option is unavailable or the screen still flickers, fully quit iCUE from the system tray before using NEXUS Playback Bar.
 
 ## Update an existing install
 
