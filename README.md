@@ -24,14 +24,14 @@ Use your Corsair iCUE NEXUS as a touchscreen seek bar for Chrome on Windows. Tap
 
 ## Use NEXUS Playback Bar while iCUE is running
 
-This workaround was tested on **iCUE 5.52.93**. It lets iCUE manage your other Corsair devices while NEXUS Playback Bar controls the NEXUS screen.
+Tested on **iCUE 5.52.93**. This lets iCUE manage your other Corsair devices while NEXUS Playback Bar controls the NEXUS screen.
 
-1. Unplug the NEXUS and leave iCUE running.
-2. In **iCUE → Settings → Software Updates**, disable automatic updates. If iCUE offers a removal option for the disconnected **iCUE NEXUS** module, remove that module.
-3. Reconnect the NEXUS. If iCUE shows **New Device Detected** for the NEXUS, skip **Download and Install** so the module stays uninstalled.
-4. Open NEXUS Playback Bar, play something in Chrome, and check that you can scrub on the NEXUS without flicker while your other Corsair devices still respond to iCUE.
+1. In **iCUE → Settings → Software Updates**, turn off **Automatic Download**.
+2. Unplug the NEXUS. A **trash icon** will appear to the right of **iCUE NEXUS** in the Software Updates list. Click it to remove the NEXUS software module.
+3. Plug the NEXUS back in. Click the **×** on the **New Device Detected** popup to close it. Leave **Download and Install** untouched so iCUE keeps the module uninstalled.
+4. You can ignore the **New Device Detected** tile on the iCUE Home screen and use NEXUS Playback Bar with iCUE still running.
 
-With automatic updates disabled, check for iCUE updates manually. If the removal option is unavailable or the screen still flickers, fully quit iCUE from the system tray before using NEXUS Playback Bar.
+With **Automatic Download** off, check for iCUE updates manually. If the trash icon is missing or the screen still flickers, fully quit iCUE from the system tray before using NEXUS Playback Bar.
 
 ## Update an existing install
 
