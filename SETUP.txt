@@ -1,0 +1,78 @@
+NEXUS Playback Bar for Windows
+
+1. Extract the entire ZIP and keep its files together.
+2. Open chrome://extensions in Chrome. Enable Developer mode, click Load unpacked,
+   and select the extracted chrome folder.
+3. Close the hardware test and run nexus-playback.pyw. Leave iCUE running to check
+   whether it can share the NEXUS. The app uses the Python already on this PC.
+4. Reload a YouTube tab and play a regular video. Look for the bar on the NEXUS,
+   then tap about halfway across and confirm that the video jumps to the middle.
+5. Repeat with music.amazon.com and Prime Video on primevideo.com or amazon.com.
+   Each site can limit the available seek range. If the player does not expose
+   a seekable media element, the bar may wait or show seeking unavailable.
+
+The desktop window shows the detected site and playback time. The bridge runs
+only on this PC at 127.0.0.1. Close the desktop window to stop it. Remove the
+extension on chrome://extensions to undo the Chrome setup.
+
+To test with iCUE running:
+- In iCUE, add a NEXUS page with a solid black background and no widgets,
+  buttons, or animated image. Swipe to that page on the physical NEXUS.
+- In the desktop app, enable Static iCUE page (reduce display writes) and
+  choose Auto while playing or Show media. Play a video and test a tap.
+- This option sends at most one changed frame per second during continuous
+  playback and skips unchanged frames. iCUE may still redraw the black page.
+- To go back to your dashboard, choose Show Corsair, then swipe to your
+  dashboard on the NEXUS if it does not redraw automatically.
+
+For media titles, replace the previously loaded Chrome extension folder with
+the chrome folder in this release, click Reload on chrome://extensions, and
+refresh your media tab. If Chrome is still pointing to a different folder,
+load this release's chrome folder and turn off the previous copy.
+
+For flicker-free playback, fully quit iCUE from its system tray menu.
+Background picks are used on the physical NEXUS and reset when the app closes.
+Image backgrounds are center-cropped and dimmed. PNG and GIF are supported.
+
+Version 0.2.2: Reload the included Chrome extension and refresh the media tab
+to enable automatic thumbnails. Thumbnail is the default; Black, Color and
+Image are manual alternatives. Text position and title alignment affect the
+physical NEXUS. Artwork is fetched directly from supported media CDNs.
+
+Version 0.2.3 adds Inline above and Inline below under Text position.
+The title and timestamps share one row in those layouts, with a thicker
+seek bar. Left and Right align the title inside the timestamp margins.
+Version 0.2.5 adds background brightness and shows more of each video thumbnail.
+Version 0.2.6 adds Thumbnail fit: Stretch (default) or Centered (original aspect ratio).
+Version 0.2.7 corrects the red and blue channel order on the physical NEXUS.
+Version 0.2.8 adds automatic thumbnail-based bar colors and a custom color picker.
+Version 0.2.9 adds channel and artist credits. Reload the included Chrome extension and refresh the media tab.
+Version 0.2.10 adds Beside title, Hidden and Opposite sides channel or artist display modes.
+Version 0.2.11 adds White, Auto contrast, and Custom text colors plus Text brightness.
+Version 0.2.12 adds black text outlines, seek bar borders, and three bar thicknesses.
+Version 0.2.13 schedules one-second updates and interpolates playback in smooth mode. Reload the bundled extension to report playback speed.
+
+Version 0.2.14: Update and reload the Chrome extension. On an additional
+video site, click the NEXUS Playback Bar extension icon on the video tab.
+ON means the script loaded. Some embedded players are hosted in a separate
+origin that Chrome cannot access with temporary tab permissions. Refreshing
+or leaving a page can require clicking the extension again.
+
+Version 0.2.15 detects playback automatically on HTTP and HTTPS video pages,
+including accessible embedded frames. Chrome needs site access for automatic
+detection. The Windows bridge receives media metadata locally during playback.
+Reload the updated extension and refresh open video tabs. Tap or hold and drag
+on the NEXUS or the app preview to seek.
+Version 0.2.17 scrolls long titles to the right in inline layouts.
+Version 0.2.18 keeps the seek marker at the held touch position and resends the last drag target on release. Reload the bundled Chrome extension for faster seek polling.
+Version 0.2.19 uses the main page title for embedded players while keeping seek requests routed to the actual player.
+Version 0.2.20 uses the main page poster for embedded videos when available. Uncheck Seek live while dragging on NEXUS to preview the position and seek on release.
+Version 0.2.21 throttles live seeks during dragging, commits the final position on release, and adds page metadata and poster fallbacks.
+Version 0.2.22 redraws on touch as fast as USB writes finish and seeks on release by default.
+
+Version 0.2.25 saves settings to %LOCALAPPDATA%\NexusPlaybackBar\settings.json.
+Settings save automatically and via Save settings. Close the window to hide
+it. Left-click the tray icon once to reopen settings. Right-click for the Quit menu.
+If the tray icon is unavailable, hiding minimizes to the taskbar. Launch the
+app manually after signing in. Delete settings.json while the app is closed
+to reset preferences. Navigate to the tray overflow if the icon is hidden.
