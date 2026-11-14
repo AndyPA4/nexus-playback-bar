@@ -1,10 +1,12 @@
 NEXUS Playback Bar for Windows
 
-1. Extract the entire ZIP and keep its files together.
+1. Extract the entire ZIP. Close any running copy, then double-click Install-NEXUS.cmd.
+   Open NEXUS Playback Bar from the Windows Start menu. You can pin it to Start.
+   Keep the extracted chrome folder in place while Chrome uses it.
 2. Open chrome://extensions in Chrome. Enable Developer mode, click Load unpacked,
    and select the extracted chrome folder.
-3. Close the hardware test and run nexus-playback.pyw. Leave iCUE running to check
-   whether it can share the NEXUS. The app uses the Python already on this PC.
+3. Quit iCUE and launch NEXUS Playback Bar. The installer uses Python 3 and Tkinter
+   already installed on the PC. The portable nexus-playback.pyw also works.
 4. Reload a YouTube tab and play a regular video. Look for the bar on the NEXUS,
    then tap about halfway across and confirm that the video jumps to the middle.
 5. Repeat with music.amazon.com and Prime Video on primevideo.com or amazon.com.
@@ -12,7 +14,7 @@ NEXUS Playback Bar for Windows
    a seekable media element, the bar may wait or show seeking unavailable.
 
 The desktop window shows the detected site and playback time. The bridge runs
-only on this PC at 127.0.0.1. Close the desktop window to stop it. Remove the
+only on this PC at 127.0.0.1. Choose Quit in the tray menu to stop it. Remove the
 extension on chrome://extensions to undo the Chrome setup.
 
 To test with iCUE running:
@@ -31,7 +33,7 @@ refresh your media tab. If Chrome is still pointing to a different folder,
 load this release's chrome folder and turn off the previous copy.
 
 For flicker-free playback, fully quit iCUE from its system tray menu.
-Background picks are used on the physical NEXUS and reset when the app closes.
+Background picks are saved and used on the physical NEXUS.
 Image backgrounds are center-cropped and dimmed. PNG and GIF are supported.
 
 Version 0.2.2: Reload the included Chrome extension and refresh the media tab
@@ -73,6 +75,27 @@ Version 0.2.22 redraws on touch as fast as USB writes finish and seeks on releas
 Version 0.2.25 saves settings to %LOCALAPPDATA%\NexusPlaybackBar\settings.json.
 Settings save automatically and via Save settings. Close the window to hide
 it. Left-click the tray icon once to reopen settings. Right-click for the Quit menu.
-If the tray icon is unavailable, hiding minimizes to the taskbar. Launch the
-app manually after signing in. Delete settings.json while the app is closed
-to reset preferences. Navigate to the tray overflow if the icon is hidden.
+If the tray icon is unavailable, hiding minimizes to the taskbar.
+Delete settings.json while the app is closed to reset appearance preferences.
+Navigate to the tray overflow if the icon is hidden.
+
+Version 0.2.26 adds Spotify and SoundCloud web player detection and artwork support.
+Update both the Windows app and Chrome extension, then refresh your music tabs.
+
+Version 0.2.27 prefers Spotify's track timeline, smooths web playback progress,
+and expands artwork support for music services. Update both app and extension.
+
+Version 0.2.28 scrolls long titles and credits in all layouts and adds symbols
+to the NEXUS font. Reload the extension for cleaner SoundCloud titles.
+
+Version 0.2.29 adds a Start menu installer and two independent launch settings.
+Start with Windows opens the app when you sign in to Windows. Start in tray
+hides Settings on launch. Launch the installed copy before enabling startup,
+so the startup entry points to the installed app. Both options are off by
+default on a fresh install. To remove the installed app, turn off Start with
+Windows, quit, then remove the Start menu shortcut and the app folder in
+%LOCALAPPDATA%\NexusPlaybackBar. The settings file is stored separately.
+
+Version 0.2.30 adds the ice-blue NPB icon to Windows Settings, the tray, and the Start menu shortcut. Run Install-NEXUS.cmd again to update the shortcut.
+
+Version 0.2.31 adds the NPB icon to Chrome. Reload the extension after updating its chrome folder.

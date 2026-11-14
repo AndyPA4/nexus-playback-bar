@@ -15,7 +15,8 @@ import tkinter as tk
 from tkinter import colorchooser, filedialog, messagebox
 
 import preferences
-from tray import Tray
+import startup
+from tray import Tray, activate_existing
 
 from nexus import BAR_LEFT, BAR_RIGHT, HEIGHT, THEMES, WIDTH, c, clock, w, draw, find_nexus, input_report_length, kernel, open_nexus, render
 
@@ -266,6 +267,10 @@ class Bridge(BaseHTTPRequestHandler):
                 if parsed.scheme == "https" and parsed.netloc in (
                     "i.ytimg.com", "m.media-amazon.com", "images-na.ssl-images-amazon.com",
                     "images.amazon.com", "images-eu.ssl-images-amazon.com",
+                    "i.scdn.co", "mosaic.scdn.co", "image-cdn-ak.spotifycdn.com",
+                    "image-cdn-fa.spotifycdn.com", "image-cdn-spotify.spotifycdn.com",
+                    "i1.sndcdn.com", "is1-ssl.mzstatic.com", "is2-ssl.mzstatic.com",
+                    "is3-ssl.mzstatic.com", "is4-ssl.mzstatic.com", "is5-ssl.mzstatic.com",
                 ):
                     item["artwork"] = artwork
         except (TypeError, ValueError, KeyError, OverflowError):
@@ -273,7 +278,9 @@ class Bridge(BaseHTTPRequestHandler):
             return
         item["seen"] = now = time.monotonic()
         with lock:
-            item["title_started"] = players.get(key, {}).get("title_started", now)
+            previous_item = players.get(key, {})
+            same_text = (previous_item.get("title"), previous_item.get("credit")) == (item["title"], item["credit"])
+            item["title_started"] = previous_item.get("title_started", now) if same_text else now
             players[key] = item
             current = active(now)
             command = pending.pop(key, None)
@@ -421,7 +428,7 @@ def update():
                 frame = (marker, item["seekable"], int(position), int(item["duration"]),
                          color, item["title"], backdrop, arrangement, title_edge, brightness,
                          item["credit"], credit_style, ink, ink_brightness, *borders,
-                         int((now - item["title_started"]) * 40) if arrangement.startswith("Inline") else None)
+                         int((now - item["title_started"]) * 40))
                 if (dragging or now >= next_draw) and frame != previous:
                     next_draw = now + interval
                     draw(handle, *frame)
@@ -449,6 +456,8 @@ def update():
 
 
 if __name__ == "__main__":
+    if activate_existing():
+        raise SystemExit
     colors = {"bg": "#0c121a", "panel": "#141e2a", "text": "#ebf4fe", "muted": "#99acc2"}
     backgrounds = {"Thumbnail": BLACK, "Black": BLACK}
     saved = preferences.load()
@@ -559,9 +568,10 @@ if __name__ == "__main__":
             request_seek(item, item["duration"] * ratio, now)
 
     window = tk.Tk()
+    window.withdraw()
     window.title("NEXUS Playback Bar")
-    window.geometry("740x725")
-    window.minsize(688, 725)
+    window.geometry("740x765")
+    window.minsize(688, 765)
     window.configure(bg=colors["bg"])
     tk.Label(window, text="NEXUS Playback Bar", font=("Segoe UI", 22, "bold"),
              fg=colors["text"], bg=colors["bg"]).pack(anchor="w", padx=24, pady=(18, 8))
@@ -768,7 +778,7 @@ if __name__ == "__main__":
                 frame = (round(ratio * (WIDTH - 1)), item["seekable"], int(position),
                          int(item["duration"]), color, item["title"], backdrop, layout, alignment,
                          background_brightness, item["credit"], credit_mode, text_color, text_brightness,
-                         *outline_options, int((now - item["title_started"]) * 40) if layout.startswith("Inline") else None)
+                         *outline_options, int((now - item["title_started"]) * 40))
             else:
                 frame = (0, False, 0, 0, color, "Waiting for playback", backdrop, layout, alignment,
                          background_brightness, "", credit_mode, text_color, text_brightness, *outline_options)
@@ -787,8 +797,35 @@ if __name__ == "__main__":
             preview.itemconfigure(preview_item, image=preview_image)
         window.after(33 if held_seek else 100, refresh)
 
+    launch_in_tray = tk.BooleanVar(value=saved.get("start_in_tray") is True)
+    launch_with_windows = tk.BooleanVar()
+    try:
+        launch_with_windows.set(startup.enabled())
+    except OSError:
+        pass
+
+    def change_startup():
+        requested = launch_with_windows.get()
+        try:
+            startup.set_enabled(requested, __file__)
+        except OSError as error:
+            launch_with_windows.set(not requested)
+            saved_label.set(f"Could not change Windows startup: {error}")
+        else:
+            saved_label.set("Windows startup enabled" if requested else "Windows startup disabled")
+
+    launch_options = tk.Frame(window, bg=colors["bg"])
+    launch_options.pack(fill="x", padx=24, pady=(8, 0))
+    for label, variable, command in (
+        ("Start with Windows", launch_with_windows, change_startup),
+        ("Start in tray", launch_in_tray, lambda: save_settings(True)),
+    ):
+        tk.Checkbutton(launch_options, text=label, variable=variable, command=command,
+                       bg=colors["bg"], fg=colors["text"], selectcolor=colors["panel"],
+                       activebackground=colors["bg"], activeforeground=colors["text"]).pack(side="left", padx=(0, 16))
+
     def settings_snapshot():
-        return ({key: globals()[key] for key in keys}, applied_background.get(),
+        return ({**{key: globals()[key] for key in keys}, "start_in_tray": launch_in_tray.get()}, applied_background.get(),
                 {name: backgrounds[name] for name in ("Color", "Image") if name in backgrounds})
 
     last_saved = settings_snapshot()
@@ -845,6 +882,8 @@ if __name__ == "__main__":
         tray = Tray(window, open_settings, quit_app)
     except OSError:
         tray = None
+    if not (launch_in_tray.get() and tray and tray.ready):
+        window.deiconify()
     window.protocol("WM_DELETE_WINDOW", hide)
     window.after(400, autosave)
 

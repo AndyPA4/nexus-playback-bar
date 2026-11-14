@@ -1,42 +1,38 @@
 # NEXUS Playback Bar
 
-Use your Corsair iCUE NEXUS as a touchscreen seek bar for Chrome. I built this so I could see what was playing and jump to a different spot without leaving the browser tab.
+Use your Corsair iCUE NEXUS as a touchscreen seek bar for Chrome on Windows. Tap to jump or drag to scrub. The display can show titles, artists, playback progress, and cover art.
 
-**Latest build** · v0.2.25 · Windows + Google Chrome
+## Browser compatibility
 
-## What it does
+| Website | Status in Chrome |
+|---|---|
+| YouTube | Tested |
+| Amazon Music | Tested |
+| Spotify Web Player | Tested |
+| Apple Music on the web | Tested |
+| SoundCloud | Tested |
+| Prime Video | Title and artwork vary by page |
+| Other web players | Detection, artwork, and seeking depend on the player |
 
-- Shows the media title, elapsed time, total duration, and channel or artist when available.
-- Lets you tap to seek or drag to scrub on the NEXUS or in the Windows preview. By default, the video seeks when you lift your finger. Live seeking is optional.
-- Uses the current thumbnail for the background and seek bar color when artwork is available. You can also use a solid color or your own PNG or GIF background.
-- Lets you adjust text layout, title alignment, brightness, outlines, and seek bar thickness. Long titles scroll in the inline layouts.
-- Runs from the Windows system tray and saves your settings between sessions.
+## Install v0.2.31
 
-## Setup
+1. Connect your NEXUS over USB. Install Python 3 for Windows with Tkinter and the Python launcher (`py.exe`).
+2. Download `nexus-playback-bar-v0.2.31.zip` from [Releases](../../releases) and extract it to a folder you can keep.
+3. Run `Install-NEXUS.cmd`, then open **NEXUS Playback Bar** from Start.
+4. In `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted `chrome` folder. Pin the NPB icon from Chrome’s Extensions menu for easy access.
+5. Fully quit iCUE from its system tray menu to prevent display flicker. Refresh your music tab and start playback.
 
-You’ll need a Corsair iCUE NEXUS connected over USB, a Windows PC with Python 3 and Tkinter, and Google Chrome.
+## Update an existing install
 
-1. Download **nexus-playback-bar-v0.2.25.zip** from the repository’s **Releases** tab and extract it. Keep the files together.
-2. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted `chrome` folder.
-3. Fully quit iCUE from its system tray menu. Both apps can draw to the NEXUS at the same time, which causes flicker.
-4. Run `nexus-playback.pyw`. Refresh your media tab and play a YouTube video to check that the seek bar appears.
-
-To update, close the running app and extract the new ZIP over the existing files. Click **Reload** on the extension in `chrome://extensions`, refresh your media tab, then launch the updated Windows app.
+1. Right-click the NPB tray icon and choose **Quit**.
+2. Extract the new ZIP and run its `Install-NEXUS.cmd` again. Your saved settings carry over.
+3. Replace the files in the existing unpacked extension folder with the contents of the new `chrome` folder, including `icons`. Go to `chrome://extensions` and click **Reload** for NEXUS Playback Bar. If you load a new folder instead, disable the old copy.
+4. Relaunch the Windows app from Start and refresh your media tabs.
 
 ## Tray and settings
 
-Close the Settings window or click **Hide** to keep the app running in the tray. Left-click the tray icon once to reopen Settings. Right-click the icon and choose **Quit** to stop the app. Launch the app again after signing in to Windows.
+Left-click the NPB tray icon for Settings. Right-click for **Quit**. **Start with Windows** launches the app at sign-in. **Start in tray** opens it with Settings hidden. The toggles work independently.
 
-Settings save automatically to `%LOCALAPPDATA%\NexusPlaybackBar\settings.json`. To reset them, quit the app and delete that file.
+The extension uses site access to detect playback and sends media state to the app at `127.0.0.1`. Artwork may be fetched from the website or its image host.
 
-## Browser support
-
-YouTube is the most tested site. The extension also detects compatible web players, including accessible embedded players. Prime Video and Amazon Music support varies by page. Some players limit seeking or provide incomplete titles and artwork.
-
-The extension needs site access for automatic detection. It sends playback position and media metadata to the Windows app over a local connection at `127.0.0.1`. Artwork may be downloaded from the media site or its image host.
-
-If a site behaves differently, open an issue with the site name, the app and extension versions, and what you see on the NEXUS.
-
-## Credits
-
-The NEXUS USB code uses [NexusTool by willneedit](https://github.com/willneedit/NexusTool). Its MIT license is included in [NexusTool-LICENSE.txt](NexusTool-LICENSE.txt).
+NEXUS USB support uses [NexusTool by willneedit](https://github.com/willneedit/NexusTool). Its MIT license is included in [NexusTool-LICENSE.txt](NexusTool-LICENSE.txt).

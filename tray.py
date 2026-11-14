@@ -1,6 +1,20 @@
 """Native Windows notification icon and context menu."""
 import ctypes as c
 from ctypes import wintypes as w
+from pathlib import Path
+
+
+WINDOW_NAME = "NEXUS Playback Bar notification window"
+OPEN_SETTINGS = 0x8002
+
+
+def activate_existing():
+    user = c.WinDLL("user32", use_last_error=True)
+    user.FindWindowW.argtypes = (w.LPCWSTR, w.LPCWSTR)
+    user.FindWindowW.restype = w.HWND
+    user.PostMessageW.argtypes = (w.HWND, w.UINT, w.WPARAM, w.LPARAM)
+    hwnd = user.FindWindowW("Static", WINDOW_NAME)
+    return bool(hwnd and user.PostMessageW(hwnd, OPEN_SETTINGS, 0, 0))
 
 
 class IconData(c.Structure):
@@ -40,6 +54,9 @@ class Tray:
         user.DestroyWindow.restype = w.BOOL
         user.LoadIconW.argtypes = (w.HINSTANCE, c.c_void_p)
         user.LoadIconW.restype = w.HICON
+        user.LoadImageW.argtypes = (w.HINSTANCE, w.LPCWSTR, w.UINT, c.c_int, c.c_int, w.UINT)
+        user.LoadImageW.restype = w.HICON
+        user.DestroyIcon.argtypes = (w.HICON,)
         user.RegisterWindowMessageW.argtypes = (w.LPCWSTR,)
         user.RegisterWindowMessageW.restype = w.UINT
         user.GetCursorPos.argtypes = (c.POINTER(w.POINT),)
@@ -63,15 +80,19 @@ class Tray:
         self.taskbar_created = user.RegisterWindowMessageW("TaskbarCreated")
 
         # Keep the notification target alive independently of Tk's visible window.
-        hwnd = user.CreateWindowExW(0, "Static", "NEXUS Playback Bar", 0,
+        hwnd = user.CreateWindowExW(0, "Static", WINDOW_NAME, 0,
                                     0, 0, 0, 0, None, None, None, None)
         if not hwnd:
             raise c.WinError(c.get_last_error())
+        self.custom_icon = user.LoadImageW(None, str(Path(__file__).with_name("npb.ico")), 1, 0, 0, 0x10 | 0x40)
         self.data = IconData(c.sizeof(IconData), hwnd, 1, 7, self.MESSAGE,
-                             user.LoadIconW(None, 32512), "NEXUS Playback Bar")
+                             self.custom_icon or user.LoadIconW(None, 32512), "NEXUS Playback Bar")
 
         @procedure
         def callback(hwnd, message, wp, lp):
+            if message == OPEN_SETTINGS:
+                self.pending = self.open_settings
+                return 0
             if message == self.MESSAGE:
                 if lp == self.LEFT_RELEASE:
                     self.pending = self.open_settings
@@ -130,5 +151,7 @@ class Tray:
             self.notify(2, c.byref(self.data))
             self.set_proc(hwnd, -4, self.previous)
             self.user.DestroyWindow(hwnd)
+            if self.custom_icon:
+                self.user.DestroyIcon(self.custom_icon)
             self.data.hwnd = None
             self.ready = False

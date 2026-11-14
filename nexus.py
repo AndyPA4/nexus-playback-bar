@@ -5,6 +5,8 @@ import re
 import struct
 import subprocess
 import threading
+import unicodedata
+from functools import lru_cache
 from pathlib import Path
 import tkinter as tk
 
@@ -49,7 +51,7 @@ def input_report_length(handle):
 
 
 THEMES = {"Mint": (105, 236, 182), "Sky": (100, 186, 255), "Amber": (255, 182, 87)}
-GLYPHS = dict(zip("0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZ .-!?·'", (
+GLYPHS = dict(zip("0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZ .-!?\u00b7'", (
     "75557", "26227", "71747", "71717", "55711", "74717",
     "74757", "71111", "75757", "75717", "02020",
     "25755", "65656", "74447", "65556", "74647", "74644", "74557",
@@ -58,6 +60,38 @@ GLYPHS = dict(zip("0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZ .-!?·'", (
     "55552", "55577", "55255", "55222", "71247",
     "00000", "00002", "00700", "22202", "71202", "00200", "22000",
 )))
+GLYPHS.update({
+    "+": "02720", "&": "25257", "/": "11244", "\\": "44211",
+    "(": "24442", ")": "21112", "[": "64446", "]": "31113",
+    "{": "32423", "}": "62126", "=": "07070", "_": "00007",
+    "@": "75747", "#": "57575", "%": "51245", "$": "27632",
+    "*": "05250", "|": "22222", ",": "00024", ";": "02024",
+    '"': "55000", "~": "03500", "<": "12421", ">": "42124",
+    "^": "25000", "\u2665": "57772", "\u266a": "32264",
+    "\u00d7": "05050", "\u00f7": "20702", "\u00b0": "25000",
+    "\u25a1": "75557",
+})
+TEXT_SYMBOLS = str.maketrans({
+    "\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"',
+    "\u2013": "-", "\u2014": "-", "\u2212": "-", "\u2026": "...",
+    "\u2022": "\u00b7", "\u266b": "\u266a", "\u00d8": "O", "\u0141": "L",
+})
+
+
+@lru_cache(maxsize=128)
+def display_text(label):
+    result = []
+    for char in label.upper().translate(TEXT_SYMBOLS):
+        if char in GLYPHS:
+            result.append(char)
+            continue
+        for letter in unicodedata.normalize("NFKD", char):
+            if unicodedata.category(letter).startswith(("M", "C")):
+                continue
+            result.append(letter if letter in GLYPHS else "\u25a1")
+    return "".join(result)
+
+
 BAR_LEFT, BAR_RIGHT = 14, WIDTH - 15
 
 
@@ -88,8 +122,11 @@ def render(marker, seekable, position, duration, theme, title, background, layou
             rectangle(x - span, y + dy, 2 * span + 1, 1, color)
 
     def text(label, x, y, scale, ink, clip=(0, WIDTH)):
-        for char in label:
-            for line, row in enumerate(GLYPHS.get(char, GLYPHS["?"])):
+        first = max(0, (clip[0] - x) // (4 * scale))
+        last = max(first, (clip[1] - x + 4 * scale - 1) // (4 * scale))
+        x += first * 4 * scale
+        for char in label[first:last]:
+            for line, row in enumerate(GLYPHS.get(char, GLYPHS["\u25a1"])):
                 for column in range(3):
                     if int(row) & (4 >> column):
                         start = x + column * scale
@@ -149,16 +186,14 @@ def render(marker, seekable, position, duration, theme, title, background, layou
     left = 12 + len(elapsed) * 8 + 12 if inline else 12
     right = total_x - 12 if inline else WIDTH - 12
     def fit(label, width):
-        label = label.upper()
         capacity = max(0, (width + 2) // 8)
         if len(label) <= capacity:
             return label
         return label[:capacity - 3] + "..." if capacity >= 3 else label[:capacity]
 
-    def draw_title(label, start, end, align):
-        label = label.upper()
+    def draw_label(label, start, end, align):
         width = len(label) * 8 - 2
-        if inline and scroll is not None and width > end - start:
+        if scroll is not None and width > end - start:
             lap = width + 32
             phase = scroll % (lap + 32)
             offset = max(0, phase - 32)
@@ -169,17 +204,17 @@ def render(marker, seekable, position, duration, theme, title, background, layou
         label = fit(label, end - start)
         width = max(0, len(label) * 8 - 2)
         x = {"Left": start, "Center": (start + end - width) // 2, "Right": end - width}[align]
-        draw_text(label, x, title_y)
+        draw_text(label, x, title_y, (start, end))
 
+    title, credit = display_text(title), display_text(credit)
     if credit and credit_mode == "Opposite sides":
         gap = 16
         available = right - left - gap
-        credit_width = min(len(credit.upper()) * 8 - 2, available * 2 // 5)
-        credit_label = fit(credit, credit_width)
-        draw_title(title, left, right - gap - credit_width, "Left")
-        draw_text(credit_label, right - len(credit_label) * 8 + 2, title_y)
+        credit_width = min(len(credit) * 8 - 2, available * 2 // 5)
+        draw_label(title, left, right - gap - credit_width, "Left")
+        draw_label(credit, right - credit_width, right, "Right")
     else:
-        draw_title(f"{title} · {credit}" if credit and credit_mode == "Beside title" else title,
+        draw_label(f"{title} \u00b7 {credit}" if credit and credit_mode == "Beside title" else title,
                    left, right, alignment)
     draw_text(elapsed, 12, time_y)
     draw_text(total, total_x, time_y)
