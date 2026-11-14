@@ -41,6 +41,8 @@ NEXUS Playback Bar is still in development. If you find a bug or a website that 
 
 ## Support this project
 
+If you’d like to leave a tip, you can [support me on Ko-fi](https://ko-fi.com/andypa4).
+
 If NEXUS Playback Bar makes your NEXUS more useful, you can support the project by starring this repository or sharing it with someone who owns a NEXUS. Bug reports and feedback are welcome, too.
 
 NEXUS USB support uses [NexusTool by willneedit](https://github.com/willneedit/NexusTool). Its MIT license is included in [NexusTool-LICENSE.txt](NexusTool-LICENSE.txt).
