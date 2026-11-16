@@ -1,26 +1,57 @@
 # NEXUS Playback Bar
 
-Use your Corsair iCUE NEXUS as a touchscreen seek bar for Chrome on Windows. Tap to jump or drag to scrub. The display can show titles, artists, playback progress, and cover art.
+Turn your Corsair iCUE NEXUS into a touchscreen playback bar and an idle dashboard on Windows. Tap to jump, drag to scrub, or switch to a page of system stats, app shortcuts, pictures, or animated GIFs.
 
-## Browser compatibility
+## Download and install
 
-| Website | Status in Chrome |
-|---|---|
-| YouTube | Tested |
-| Amazon Music | Tested |
-| Spotify Web Player | Tested |
-| Apple Music on the web | Tested |
-| SoundCloud | Tested |
-| Prime Video | Title and artwork vary by page |
-| Other web players | Detection, artwork, and seeking depend on the player |
+Download the latest public package from [Releases](../../releases). The screenshots and feature guide below show **Windows Preview 29**. Its desktop playback and idle dashboard features are still in preview.
 
-## Install v0.2.31
+1. Install Python 3 for Windows with Tkinter and the Python launcher (`py.exe`), and connect the NEXUS by USB.
+2. Extract the entire ZIP and run `Install-NEXUS.cmd`. Open **NEXUS Playback Bar** from Start.
+3. For Chrome playback, open `chrome://extensions`, enable **Developer mode**, select **Load unpacked**, and choose the extracted `chrome` folder. Keep that folder in place and refresh your media tabs.
+4. If you run iCUE alongside NEXUS Playback Bar, use the [module workaround](#use-nexus-playback-bar-while-icue-is-running) below. You can also fully quit iCUE from its tray menu.
 
-1. Connect your NEXUS over USB. Install Python 3 for Windows with Tkinter and the Python launcher (`py.exe`).
-2. Download `nexus-playback-bar-v0.2.31.zip` from [Releases](../../releases) and extract it to a folder you can keep.
-3. Run `Install-NEXUS.cmd`, then open **NEXUS Playback Bar** from Start.
-4. In `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted `chrome` folder. Pin the NPB icon from Chrome’s Extensions menu for easy access.
-5. If iCUE is running, follow the [iCUE workaround](#use-nexus-playback-bar-while-icue-is-running) below or fully quit iCUE from the system tray to prevent display flicker. Refresh your media tab and start playback.
+To update, **Quit** the running app from its tray menu, run the new installer, and relaunch from Start. For Chrome, replace the contents of your existing unpacked extension folder and click **Reload** in `chrome://extensions`, or load the new folder and disable the old copy. Refresh your media tabs afterward. Windows settings carry over.
+
+## Playback
+
+![Playback settings in Arial with a sample track and touchscreen seek bar](docs/images/playback-settings.png)
+
+- Tap the timeline on the NEXUS to jump, or drag along it to scrub. Enable **Seek live while dragging on NEXUS** to send seek requests during the drag. With it off, the app previews your position and seeks when you lift your finger. **Combine rapid taps (Windows)** groups quick taps for Windows media sessions.
+- Choose **Only while playing** or **Show when paused too**. The app can show elapsed time, duration, title, and artist or channel. Playback time can show total minutes or hours, and the title and credits can use separate positions. Long titles scroll.
+- Use **General settings** to pick the display font, size, text brightness, and outline. The **Playback** tab has seek bar color, border and thickness, plus thumbnail, solid color, or custom image backgrounds. Artwork availability depends on the source.
+- Windows desktop playback works through Windows media sessions. **Windows media sessions** shows what the app detects. Titles and artwork depend on what the player exposes, and seeking requires a usable timeline and seek controls. **Connect Amazon Music** provides an additional integration for the Windows Amazon Music app. The Chrome extension is needed for Chrome playback.
+
+### Confirmed web compatibility
+
+| Web player | Status |
+| --- | --- |
+| YouTube | Confirmed working |
+| Apple Music | Confirmed working |
+| Spotify Web Player | Confirmed working |
+| Amazon Music | Confirmed working |
+| SoundCloud | Confirmed working |
+| Select other streaming sites | Confirmed on tested sites only |
+
+These results are for tested web players. Prime Video and additional web and desktop players are still being evaluated. Embedded players, ads, and live streams can expose different controls.
+
+## Idle dashboard
+
+![Idle settings in Arial with CPU, GPU, RAM, and clock widgets](docs/images/idle-dashboard.png)
+
+1. Open the **Idle** tab. Add a page, choose widgets in up to eight slots, and use sizes **1–5** to adjust their relative widths.
+2. Pick from system widgets covering CPU, GPU, RAM, VRAM, storage, network, battery, uptime, date, and time. Usage graphs offer **Bar** or **Line** and preset accent colors. Combined readings can show CPU/GPU frequencies or RAM capacity.
+3. Under **App shortcuts**, select **Custom app** to browse to a Windows executable or shortcut. Use **Name** to set the label or show only the icon. **Fit / Stretch** controls how the icon fills the widget.
+4. Under **Images**, choose **Picture / GIF** to import a local image. GIFs loop, and each image has an independent brightness slider and **Fit / Stretch** setting.
+5. Swipe left or right on the NEXUS to move between idle pages. Click the numbered circles in the Windows app to select a page directly.
+
+To switch between playback and idle, place two fingers **at least one inch apart** near the top of the NEXUS and swipe **straight down**. Start away from the round playback position marker to reduce accidental seeks. Use **Follow playback** on the Idle tab to return to automatic switching.
+
+## Tray controls
+
+Left-click the tray icon to reopen settings. Right-click it to **Quit**. **Start with Windows** and **Start in tray** are independent settings. **Stop drawing** blanks the NEXUS until you choose **Resume drawing**.
+
+The Chrome extension sends playback state to the Windows app through a local bridge at `127.0.0.1`. The app can request artwork from the website or its image host.
 
 ## Use NEXUS Playback Bar while iCUE is running
 
@@ -32,19 +63,6 @@ Tested on **iCUE 5.52.93**. This lets iCUE manage your other Corsair devices whi
 4. You can ignore the **New Device Detected** tile on the iCUE Home screen and use NEXUS Playback Bar with iCUE still running.
 
 With **Automatic Download** off, check for iCUE updates manually. If the trash icon is missing or the screen still flickers, fully quit iCUE from the system tray before using NEXUS Playback Bar.
-
-## Update an existing install
-
-1. Right-click the NPB tray icon and choose **Quit**.
-2. Extract the new ZIP and run its `Install-NEXUS.cmd` again. Your saved settings carry over.
-3. Replace the files in the existing unpacked extension folder with the contents of the new `chrome` folder, including `icons`. Go to `chrome://extensions` and click **Reload** for NEXUS Playback Bar. If you load a new folder instead, disable the old copy.
-4. Relaunch the Windows app from Start and refresh your media tabs.
-
-## Tray and settings
-
-Left-click the NPB tray icon for Settings. Right-click for **Quit**. **Start with Windows** launches the app at sign-in. **Start in tray** opens it with Settings hidden. The toggles work independently.
-
-The extension uses site access to detect playback and sends media state to the app at `127.0.0.1`. Artwork may be fetched from the website or its image host.
 
 ## Feedback and bug reports
 
