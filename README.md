@@ -4,14 +4,14 @@ Turn your Corsair iCUE NEXUS into a touchscreen playback bar and an idle dashboa
 
 ## Download and install
 
-Download the latest public package from [Releases](../../releases). The screenshots and feature guide below show **Windows Preview 29**. Its desktop playback and idle dashboard features are still in preview.
+**[Download the latest Windows build · Preview 29](../../raw/refs/heads/main/downloads/nexus-playback-bar-standalone-preview-29.zip)**
 
 1. Install Python 3 for Windows with Tkinter and the Python launcher (`py.exe`), and connect the NEXUS by USB.
-2. Extract the entire ZIP and run `Install-NEXUS.cmd`. Open **NEXUS Playback Bar** from Start.
-3. For Chrome playback, open `chrome://extensions`, enable **Developer mode**, select **Load unpacked**, and choose the extracted `chrome` folder. Keep that folder in place and refresh your media tabs.
+2. Extract the entire ZIP to a folder you can keep. Quit any running copy of NEXUS Playback Bar from its tray menu, then run `Install-NEXUS.cmd` and open **NEXUS Playback Bar** from Start.
+3. For Chrome playback, open `chrome://extensions`, enable **Developer mode**, and choose **Load unpacked**. Select the `chrome` folder from this install, disable any older copy, and refresh open media tabs. If Chrome already uses that exact folder, click **Reload** instead. Keep the folder in place.
 4. If you run iCUE alongside NEXUS Playback Bar, use the [module workaround](#use-nexus-playback-bar-while-icue-is-running) below. You can also fully quit iCUE from its tray menu.
 
-To update, **Quit** the running app from its tray menu, run the new installer, and relaunch from Start. For Chrome, replace the contents of your existing unpacked extension folder and click **Reload** in `chrome://extensions`, or load the new folder and disable the old copy. Refresh your media tabs afterward. Windows settings carry over.
+Run the installer before loading Chrome. It creates a private pairing key for the Windows app and that extracted Chrome folder. Use the same steps to update. Your Windows settings carry over. Older packages are on the [Releases page](../../releases).
 
 ## Playback
 
@@ -21,6 +21,33 @@ To update, **Quit** the running app from its tray menu, run the new installer, a
 - Choose **Only while playing** or **Show when paused too**. The app can show elapsed time, duration, title, and artist or channel. Playback time can show total minutes or hours, and the title and credits can use separate positions. Long titles scroll.
 - Use **General settings** to pick the display font, size, text brightness, and outline. The **Playback** tab has seek bar color, border and thickness, plus thumbnail, solid color, or custom image backgrounds. Artwork availability depends on the source.
 - Windows desktop playback works through Windows media sessions. **Windows media sessions** shows what the app detects. Titles and artwork depend on what the player exposes, and seeking requires a usable timeline and seek controls. **Connect Amazon Music** provides an additional integration for the Windows Amazon Music app. The Chrome extension is needed for Chrome playback.
+
+### NEXUS screen examples
+
+**YouTube video · GTA VI launch trailer.** The same video with the thumbnail stretched across the screen and centered at its original proportions.
+
+![GTA VI trailer on YouTube with a stretched thumbnail](docs/images/youtube-gta-stretched.png)
+
+![GTA VI trailer on YouTube with a centered thumbnail](docs/images/youtube-gta-centered.png)
+
+**Chrome music player · “Rap God” by Eminem.** A music layout can show the track, artist, progress, and album art. Here the artwork is centered in one example and stretched in the other.
+
+![Rap God and Eminem with centered artwork](docs/images/chrome-music-centered.png)
+
+![Rap God and Eminem with stretched artwork](docs/images/chrome-music-stretched.png)
+
+**Waiting for media.** This screen can appear when you switch to the playback view before playing anything or after the active player has stopped reporting. In automatic mode, the app can show your idle dashboard when nothing is playing.
+
+![Waiting for media screen with an empty timeline](docs/images/waiting-for-media.png)
+
+### Customize the playback bar
+
+| Setting | What you can change |
+| --- | --- |
+| Seek bar | Use a color drawn from the artwork or pick your own. Adjust the thickness and add a border. |
+| Font and text | Change the font, size, color, brightness, and outline. |
+| Time and layout | Show total minutes or hours, choose the title and timestamp layout, align the title, and place the artist or channel beside the title or on the opposite side. You can hide the credit, too. |
+| Background | Use artwork, black, a solid color, or your own image. Adjust brightness and choose **Centered** or **Stretch** for thumbnails. |
 
 ### Confirmed web compatibility
 
