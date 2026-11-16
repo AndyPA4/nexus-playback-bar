@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NEXUS Playback Bar",
-  "version": "0.2.31",
+  "version": "0.2.35",
   "permissions": [
     "activeTab",
     "scripting"
@@ -15,7 +15,10 @@
     }
   },
   "host_permissions": [
-    "http://127.0.0.1:18763/*"
+    "http://127.0.0.1:18763/*",
+    "https://*.media-amazon.com/*",
+    "https://*.ssl-images-amazon.com/*",
+    "https://images.amazon.com/*"
   ],
   "background": {
     "service_worker": "bridge.js"

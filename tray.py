@@ -6,14 +6,28 @@ from pathlib import Path
 
 WINDOW_NAME = "NEXUS Playback Bar notification window"
 OPEN_SETTINGS = 0x8002
+COPY_DATA = 0x004A
 
 
-def activate_existing():
+class CopyData(c.Structure):
+    _fields_ = [("kind", c.c_size_t), ("size", w.DWORD), ("data", c.c_void_p)]
+
+
+def activate_existing(video=None):
     user = c.WinDLL("user32", use_last_error=True)
     user.FindWindowW.argtypes = (w.LPCWSTR, w.LPCWSTR)
     user.FindWindowW.restype = w.HWND
     user.PostMessageW.argtypes = (w.HWND, w.UINT, w.WPARAM, w.LPARAM)
     hwnd = user.FindWindowW("Static", WINDOW_NAME)
+    if hwnd and video:
+        payload = c.create_unicode_buffer(video)
+        packet = CopyData(1, c.sizeof(payload), c.cast(payload, c.c_void_p))
+        user.SendMessageTimeoutW.argtypes = (w.HWND, w.UINT, w.WPARAM, w.LPARAM,
+                                            w.UINT, w.UINT, c.POINTER(c.c_size_t))
+        user.SendMessageTimeoutW.restype = c.c_ssize_t
+        result = c.c_size_t()
+        return bool(user.SendMessageTimeoutW(hwnd, COPY_DATA, 0, c.addressof(packet),
+                                             2, 2000, c.byref(result)) and result.value)
     return bool(hwnd and user.PostMessageW(hwnd, OPEN_SETTINGS, 0, 0))
 
 
@@ -31,11 +45,12 @@ class Tray:
     RIGHT_RELEASE = 0x0205
     QUIT = 1
 
-    def __init__(self, window, open_settings, quit_app):
+    def __init__(self, window, open_settings, quit_app, open_video=None):
         self.window = window
         self.open_settings = open_settings
         self.quit_app = quit_app
         self.pending = None
+        self.pending_video = None
         self.poll = None
         self.ready = False
         user = self.user = c.WinDLL("user32", use_last_error=True)
@@ -90,6 +105,12 @@ class Tray:
 
         @procedure
         def callback(hwnd, message, wp, lp):
+            if message == COPY_DATA and lp and open_video:
+                packet = c.cast(lp, c.POINTER(CopyData)).contents
+                if packet.kind == 1 and 2 <= packet.size <= 65536 and packet.size % 2 == 0:
+                    self.pending_video = c.wstring_at(packet.data, packet.size // 2 - 1)
+                    return 1
+                return 0
             if message == OPEN_SETTINGS:
                 self.pending = self.open_settings
                 return 0
@@ -104,6 +125,7 @@ class Tray:
             return user.CallWindowProcW(self.previous, hwnd, message, wp, lp)
 
         self.callback = callback
+        self.open_video = open_video
         self.previous = self.set_proc(hwnd, -4, c.cast(callback, c.c_void_p))
         if not self.previous:
             error = c.get_last_error()
@@ -118,6 +140,9 @@ class Tray:
         action, self.pending = self.pending, None
         if action:
             action()
+        video, self.pending_video = self.pending_video, None
+        if video and self.data.hwnd:
+            self.open_video(video)
         if self.data.hwnd:
             self.poll = self.window.after(25, self.dispatch)
 

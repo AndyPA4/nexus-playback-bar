@@ -1,9 +1,14 @@
 (() => {
   if (globalThis.nexusPlaybackStarted) return;
   globalThis.nexusPlaybackStarted = true;
-  const prime = /(^|\.)primevideo\.com$/i.test(location.hostname) ||
+  const isPrime = () => /(^|\.)primevideo\.com$/i.test(location.hostname) ||
       (location.hostname === "www.amazon.com" &&
        /^\/(?:gp\/video|Amazon-Video|Prime-Video|prime-video|detail\/|dp\/)/i.test(location.pathname));
+  const cleanPrimeTitle = value => (typeof value === "string" ? value : "").trim()
+    .replace(/^(?:Prime Video|Amazon(?:\.com)?)\s*[:|\u2013\u2014-]\s*/i, "")
+    .replace(/\s*[:|\u2013\u2014-]\s*(?:Prime Video|Amazon(?:\.com)?)$/i, "")
+    .replace(/^(?:Watch|Play|Resume)\s+/i, "").trim();
+  const primeTitleKey = value => cleanPrimeTitle(value).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 
   function artworkUrl(...candidates) {
     for (const candidate of candidates.flat(2)) {
@@ -33,28 +38,28 @@
     const entries = structured.filter(value => [value["@type"]].flat().some(
       type => ["Movie", "TVEpisode", "TVSeries", "VideoObject", "MusicRecording"].includes(type)));
     const entry = entries[0];
-    if (prime) {
-      const clean = value => (typeof value === "string" ? value : "").trim()
-        .replace(/^(?:Prime Video|Amazon(?:\.com)?)\s*[:|–—-]\s*/i, "")
-        .replace(/\s*[:|–—-]\s*(?:Prime Video|Amazon(?:\.com)?)$/i, "")
-        .replace(/^Watch\s+/i, "").trim();
-      const key = value => clean(value).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+    if (isPrime()) {
       const text = selector => document.querySelector(selector)?.textContent?.trim();
       const session = navigator.mediaSession?.metadata;
       const hero = text('[data-testid="hero-title"]');
       const social = meta("og:title") || meta("twitter:title");
+      const browserTitle = document.title;
+      const isGeneric = value => /^(?:amazon(?:\.com)?|prime video|home|watch now)$|\bmovies,?\s+tv shows\b|\bmovies,?\s+tv,?\s+sports\b/i.test(value);
       const detail = entries.find(value => [value["@type"]].flat().some(
         type => ["Movie", "TVEpisode", "TVSeries"].includes(type)));
-      const title = [text(".atvwebplayersdk-title-text"), hero, detail?.name,
-        social, session?.title, document.title].map(clean).find(value =>
-          value && !/^(?:amazon(?:\.com)?|prime video|home|watch now)$/i.test(value)) || "";
-      const matches = value => !!title && key(value) === key(title);
+      const title = [text(".atvwebplayersdk-title-text"), session?.title, browserTitle,
+        hero, detail?.name, social].map(cleanPrimeTitle).find(value => value && !isGeneric(value)) || "";
+      const matches = value => !!title && primeTitleKey(value) === primeTitleKey(title);
       const matching = entries.filter(value => matches(value.name));
       const heroImage = matches(hero) && document.querySelector(
         'img[data-testid="hero-image"], [data-testid="hero-image"] img, img[data-testid="hero-background-image"]');
+      const namedImage = [...document.querySelectorAll('img')].find(image =>
+        image.naturalWidth >= 96 && (matches(image.alt) ||
+          matches(image.closest('a[aria-label]')?.getAttribute("aria-label"))));
       const poster = artworkUrl(
         matching.flatMap(value => [value.image, value.thumbnailUrl].flat()),
         heroImage?.currentSrc, heroImage?.src,
+        namedImage?.currentSrc, namedImage?.src,
         matches(social) ? [meta("og:image"), meta("twitter:image")] : [],
         matches(session?.title) ? (session?.artwork || []).map(image => image.src).reverse() : []
       );
@@ -74,12 +79,12 @@
       reply(pageMetadata());
     });
   }
-  if (location.hostname === "www.amazon.com" &&
-      !/^\/(?:gp\/video|Amazon-Video|Prime-Video|prime-video|detail\/|dp\/)/i.test(location.pathname)) return;
   const id = Array.from(crypto.getRandomValues(new Uint8Array(16)),
                         byte => byte.toString(16).padStart(2, "0")).join("");
   let media, source, generation = 0, played = 0, busy = false;
   let page = {}, pageKey, pageRead = -Infinity;
+  let primeSeek;
+  let lastPrimeCatalog = -Infinity;
   const playedMedia = new WeakSet();
   function notePlay(event) {
     if (event.target instanceof HTMLMediaElement) {
@@ -199,6 +204,19 @@
 
   async function update() {
     if (busy) return;
+    const prime = isPrime();
+    if (location.hostname === "www.amazon.com" && !prime) return;
+    if (prime && window === window.top && performance.now() - lastPrimeCatalog >= 2500) {
+      lastPrimeCatalog = performance.now();
+      const metadata = pageMetadata();
+      const posters = [...document.querySelectorAll('img')].filter(image => image.naturalWidth >= 96)
+        .map(image => ({
+          title: cleanPrimeTitle(image.alt || image.closest('a[aria-label]')?.getAttribute("aria-label")),
+          poster: artworkUrl(image.currentSrc, image.src)
+        })).filter(entry => entry.title && entry.poster).slice(0, 40);
+      if (metadata.title && metadata.poster) posters.push(metadata);
+      if (posters.length) chrome.runtime.sendMessage({type: "nexus-prime-posters", posters}).catch(() => {});
+    }
     const nodes = [...document.querySelectorAll("video,audio")];
     const valid = el => el && el.isConnected && Number.isFinite(el.duration) && el.duration > 0;
     const pick = nodes.find(el => valid(el) && !el.paused && !el.ended && el.playbackRate > 0) ||
@@ -232,8 +250,10 @@
       if (!pick.paused) played = Date.now();
     }
     const key = id + ":" + generation;
-    const ad = location.hostname === "www.youtube.com" &&
-               !!pick.closest(".ad-showing,.ad-interrupting");
+    const ad = (location.hostname === "www.youtube.com" &&
+               !!pick.closest(".ad-showing,.ad-interrupting")) ||
+               (prime && [...document.querySelectorAll('[aria-label^="Ad playing" i]')]
+                 .some(label => label.getClientRects().length > 0));
     const seekable = !ad && pick.seekable.length > 0;
     const metadata = navigator.mediaSession?.metadata;
     if (pageKey !== location.href || performance.now() - pageRead >= 2000) {
@@ -253,13 +273,24 @@
     const artwork = videoId && /^[\w-]{11}$/.test(videoId)
         ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
         : prime ? page.poster : artworkUrl(sessionArt, appleMusic ? "" : page.poster);
+    let seekResult;
+    if (primeSeek) {
+      if (primeSeek.key !== key) primeSeek = undefined;
+      else if (!pick.seeking && Math.abs(pick.currentTime - primeSeek.target) <= 1.5) {
+        seekResult = "confirmed";
+        primeSeek = undefined;
+      } else if (performance.now() >= primeSeek.deadline) {
+        seekResult = "unconfirmed";
+        primeSeek = undefined;
+      }
+    }
     busy = true;
     try {
       const next = await send({
         id: key, position: pick.currentTime, duration: pick.duration,
         playing: !pick.paused && !pick.ended, seekable, played, site: location.hostname,
-        title: title.trim().slice(0, 160), credit: (credit || "").trim().slice(0, 100), rate: pick.playbackRate,
-        artwork: artwork.slice(0, 800), prime
+        title: (title || "").trim().slice(0, 160), credit: (credit || "").trim().slice(0, 100), rate: pick.playbackRate,
+        artwork: artwork.slice(0, prime ? 1800 : 800), prime, seekResult, seeking: prime && pick.seeking
       });
       if (!next || !Number.isFinite(next.seek) || !seekable ||
           media !== pick || source !== pick.currentSrc || !pick.isConnected) return;
@@ -267,7 +298,9 @@
       for (let i = 0; i < pick.seekable.length; i++) {
         const start = pick.seekable.start(i), end = pick.seekable.end(i);
         if (next.seek >= start - 0.25 && next.seek <= end + 0.25) {
-          pick.currentTime = Math.max(start, Math.min(end, next.seek));
+          const target = Math.max(start, Math.min(end, next.seek));
+          if (prime) primeSeek = {key, target, deadline: performance.now() + 2500};
+          pick.currentTime = target;
           break;
         }
       }
